@@ -69,7 +69,7 @@ func ProcessGoals(config *Config, hometeam bool) {
 		s := *frame / rate
 		m, s := s/60, s%60
 		h, m := m/60, m%60
-		return fmt.Sprintf("%2d:%2d:%2d,%3d", h, m, s, ms)
+		return fmt.Sprintf("%02d:%02d:%02d,%03d", h, m, s, ms)
 	}
 
 	subs := srt.SubRip{}
