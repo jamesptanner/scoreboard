@@ -33,6 +33,8 @@ github.com/u2takey/ffmpeg-go v0.3.0 h1:oUHSOWat6LaSX2qSA2P3mBTSbuxxMyW9LP91M7ROZ
 github.com/u2takey/ffmpeg-go v0.3.0/go.mod h1:fYXsX59gpUyHRgO9++fANdWbNcs+500nIZPCXkquL9o=
 github.com/u2takey/go-utils v0.0.0-20200713025200-4704d09fc2c7 h1:PT7mE8HJE1mwaSazrOdSeByJ1FoV33/fHUZrBB+zwVU=
 github.com/u2takey/go-utils v0.0.0-20200713025200-4704d09fc2c7/go.mod h1:ATqKFpgjUIlhGRs8j59gXmu8Cmpo1QQEHV6vwu1hs28=
+github.com/wargarblgarbl/libgosubs v0.0.0-20181204015125-f890984adfc8 h1:xDiJ4NUezch4g1DgjPW5zyYsKkeYlQ/64AlzZx7XZFU=
+github.com/wargarblgarbl/libgosubs v0.0.0-20181204015125-f890984adfc8/go.mod h1:xc6JV9EzdDHoVx7AdbgsOh1hNyMrzlN9ya80VhxAnn8=
 gocv.io/x/gocv v0.25.0/go.mod h1:Rar2PS6DV+T4FL+PM535EImD/h13hGVaHhnCu1xarBs=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=

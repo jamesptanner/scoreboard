@@ -3,9 +3,82 @@ package scoreboard
 import (
 	"fmt"
 	"log"
+	"regexp"
+	"sort"
+	"strconv"
 
 	ffmpeg "github.com/u2takey/ffmpeg-go"
+	"github.com/wargarblgarbl/libgosubs/srt"
 )
+
+func ProcessGoals(config *Config, hometeam bool) {
+	goals := []Goal{}
+
+	reverse := func(s []string) []string {
+		a := make([]string, len(s))
+		copy(a, s)
+
+		for i := len(a)/2 - 1; i >= 0; i-- {
+			opp := len(a) - 1 - i
+			a[i], a[opp] = a[opp], a[i]
+		}
+
+		return a
+	}
+
+	safeIndex := func(s []string, i int, d string) string {
+		if len(s) > i {
+			return s[i]
+		}
+		return d
+	}
+
+	for _, v := range config.Goals {
+		if v.HomeGoal == hometeam {
+			if v.Frame == nil {
+				if v.TimeStamp == nil {
+					continue
+				}
+				//convert timestamp to frame.
+				//xx:xx:xx.xxx
+				parts := regexp.MustCompile(`[\.:]`).Split(*v.TimeStamp, -1)
+				fixedOrder := reverse(parts)
+
+				ms, _ := strconv.Atoi(safeIndex(fixedOrder, 0, "0"))
+				s, _ := strconv.Atoi(safeIndex(fixedOrder, 1, "0"))
+				m, _ := strconv.Atoi(safeIndex(fixedOrder, 2, "0"))
+				h, _ := strconv.Atoi(safeIndex(fixedOrder, 3, "0"))
+
+				totalSeconds := s + (60 * m) + (3600 * h)
+
+				v.Frame = new(int)
+				*(v.Frame) = (totalSeconds * config.Framerate) + (int)((ms*config.Framerate)/1000)
+
+			}
+			goals = append(goals, v)
+
+		}
+	}
+
+	sort.Slice(goals, func(i, j int) bool {
+		return *(goals[i].Frame) < *(goals[j].Frame)
+	})
+
+	toTimestamp := func(frame *int, rate int) string {
+		return ""
+	}
+
+	subs := srt.SubRip{}
+	last := "00:00:00,000"
+	for i := 0; i < len(goals); i++ {
+		next := toTimestamp(goals[i].Frame, config.Framerate)
+		sub := srt.CreateSubtitle(i+1, last, next, []string{fmt.Sprintf("%d", i)})
+		subs.Subtitle.Content = append(subs.Subtitle.Content, *sub)
+		last = next
+	}
+	sub := srt.CreateSubtitle(len(goals), last, toTimestamp(&config.Duration, config.Framerate), []string{fmt.Sprintf("%d", len(goals))})
+	subs.Subtitle.Content = append(subs.Subtitle.Content, *sub)
+}
 
 func RenderBoard(config *Config, outFileName *string) {
 

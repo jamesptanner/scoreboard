@@ -19,7 +19,7 @@ type Config struct {
 }
 
 type Goal struct {
-	HomeGoal  bool   `json:"hometeam"`
-	TimeStamp string `json:"timestamp"`
-	Frame     int    `json:"frame"`
+	HomeGoal  bool    `json:"hometeam"`
+	TimeStamp *string `json:"timestamp"`
+	Frame     *int    `json:"frame"`
 }
