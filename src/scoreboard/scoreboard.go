@@ -65,7 +65,11 @@ func ProcessGoals(config *Config, hometeam bool) {
 	})
 
 	toTimestamp := func(frame *int, rate int) string {
-		return ""
+		ms := (((*frame) % rate) * 1000) / rate
+		s := *frame / rate
+		m, s := s/60, s%60
+		h, m := m/60, m%60
+		return fmt.Sprintf("%2d:%2d:%2d,%3d", h, m, s, ms)
 	}
 
 	subs := srt.SubRip{}
@@ -75,6 +79,7 @@ func ProcessGoals(config *Config, hometeam bool) {
 		sub := srt.CreateSubtitle(i+1, last, next, []string{fmt.Sprintf("%d", i)})
 		subs.Subtitle.Content = append(subs.Subtitle.Content, *sub)
 		last = next
+		log.Println(last)
 	}
 	sub := srt.CreateSubtitle(len(goals), last, toTimestamp(&config.Duration, config.Framerate), []string{fmt.Sprintf("%d", len(goals))})
 	subs.Subtitle.Content = append(subs.Subtitle.Content, *sub)
@@ -83,7 +88,7 @@ func ProcessGoals(config *Config, hometeam bool) {
 func RenderBoard(config *Config, outFileName *string) {
 
 	//homeScore, awayScore := generateScores(config)
-
+	ProcessGoals(config, true)
 	err := ffmpeg.Input("/dev/zero",
 		ffmpeg.KwArgs{
 			"t":       config.Duration,
