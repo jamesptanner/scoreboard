@@ -79,16 +79,27 @@ func ProcessGoals(config *Config, hometeam bool) {
 		sub := srt.CreateSubtitle(i+1, last, next, []string{fmt.Sprintf("%d", i)})
 		subs.Subtitle.Content = append(subs.Subtitle.Content, *sub)
 		last = next
-		log.Println(last)
+		log.Println("home:", hometeam, last)
 	}
 	sub := srt.CreateSubtitle(len(goals), last, toTimestamp(&config.Duration, config.Framerate), []string{fmt.Sprintf("%d", len(goals))})
 	subs.Subtitle.Content = append(subs.Subtitle.Content, *sub)
+
+	filename := "home.srt"
+	if(!hometeam){
+		filename = "away.srt"
+	}
+
+	err := srt.WriteSrt(&subs,filename)
+	if err != nil {
+		log.Printf("Failed to write subtitles to %s: %v\n",filename,err)
+	}
 }
 
 func RenderBoard(config *Config, outFileName *string) {
 
 	//homeScore, awayScore := generateScores(config)
 	ProcessGoals(config, true)
+	ProcessGoals(config, false)
 	err := ffmpeg.Input("/dev/zero",
 		ffmpeg.KwArgs{
 			"t":       config.Duration,
