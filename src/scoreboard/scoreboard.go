@@ -85,13 +85,13 @@ func ProcessGoals(config *Config, hometeam bool) {
 	subs.Subtitle.Content = append(subs.Subtitle.Content, *sub)
 
 	filename := "home.srt"
-	if(!hometeam){
+	if !hometeam {
 		filename = "away.srt"
 	}
 
-	err := srt.WriteSrt(&subs,filename)
+	err := srt.WriteSrt(&subs, filename)
 	if err != nil {
-		log.Printf("Failed to write subtitles to %s: %v\n",filename,err)
+		log.Printf("Failed to write subtitles to %s: %v\n", filename, err)
 	}
 }
 
@@ -112,12 +112,12 @@ func RenderBoard(config *Config, outFileName *string) {
 		DrawBox(0, 0, config.BarWidth, config.Height, config.HomeColour, config.BarWidth).
 		DrawBox(config.Width-config.BarWidth, 0, config.BarWidth, config.Height, config.AwayColour, config.BarWidth).
 		Drawtext(config.HomeTeam, config.BarWidth+config.Margin, 0, false, ffmpeg.KwArgs{
-			"y":        fmt.Sprintf("main_h/2-text_h/2"),
+			"y":        fmt.Sprintf("main_h/2-max_glyph_a/2"),
 			"fontsize": config.FontSize,
 		}).
 		Drawtext(config.AwayTeam, 0, 0, false, ffmpeg.KwArgs{
 			"x":        fmt.Sprintf("main_w-%d-text_w", config.BarWidth+config.Margin),
-			"y":        fmt.Sprintf("main_h/2-text_h/2"),
+			"y":        fmt.Sprintf("main_h/2-max_glyph_a/2"),
 			"fontsize": config.FontSize,
 		}).
 		Output(*outFileName, ffmpeg.KwArgs{"frames": config.Duration}).
