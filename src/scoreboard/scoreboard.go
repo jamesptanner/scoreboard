@@ -10,7 +10,7 @@ import (
 	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
 
-func ProcessGoals(config *Config, hometeam bool) {
+func ProcessGoals(config *Config, hometeam bool, stream *ffmpeg.Stream) *ffmpeg.Stream {
 	goals := []Goal{}
 
 	reverse := func(s []string) []string {
@@ -74,14 +74,47 @@ func ProcessGoals(config *Config, hometeam bool) {
 		return *(goals[i].Frame) < *(goals[j].Frame)
 	})
 
+	// stream := ffmpeg.Input(fmt.Sprintf("color=s=%dx%d:d=%d:c=red@1.0", config.Width, config.Height, config.Duration), ffmpeg.KwArgs{
+	// 	"f": "lavfi",
+	// })
+
+	y := "main_h/2-max_glyph_a/2"
+	x := fmt.Sprintf("main_w/2-text_w-%d", config.Margin)
+	if hometeam == false {
+		x = fmt.Sprintf("main_w/2+%d", config.Margin)
+	}
+
+	kwargs := ffmpeg.KwArgs{
+		"x":        x,
+		"y":        y,
+		"fontsize": config.FontSize,
+	}
+	if len(goals) > 0 {
+		kwargs["enable"] = fmt.Sprintf("lt(n,%d)", *goals[0].Frame)
+	}
+
+	stream = stream.Drawtext("0", 0, 0, false, kwargs)
+
+	if len(goals) > 0 {
+		for i, goal := range goals {
+			enable := fmt.Sprintf("gte(n,%d)", *goal.Frame)
+			if i < len(goals)-1 {
+				enable = fmt.Sprintf("gte(n,%d)*lt(n,%d)", *goal.Frame, *goals[i+1].Frame)
+			}
+			stream = stream.Drawtext(fmt.Sprintf("%d", i+1), 0, 0, false, ffmpeg.KwArgs{
+				"x":        x,
+				"y":        y,
+				"fontsize": config.FontSize,
+				"enable":   enable,
+			})
+		}
+	}
+	return stream
+
 }
 
-func RenderBoard(config *Config, outFileName *string) {
-
-	//homeScore, awayScore := generateScores(config)
-	ProcessGoals(config, true)
-	ProcessGoals(config, false)
-	err := ffmpeg.Input("/dev/zero",
+func generateBackground(config *Config) *ffmpeg.Stream {
+	return ffmpeg.Input("/dev/zero",
 		ffmpeg.KwArgs{
 			"t":       config.Duration,
 			"s":       fmt.Sprintf("%dx%d", config.Width, config.Height),
@@ -93,14 +126,24 @@ func RenderBoard(config *Config, outFileName *string) {
 		DrawBox(0, 0, config.BarWidth, config.Height, config.HomeColour, config.BarWidth).
 		DrawBox(config.Width-config.BarWidth, 0, config.BarWidth, config.Height, config.AwayColour, config.BarWidth).
 		Drawtext(config.HomeTeam, config.BarWidth+config.Margin, 0, false, ffmpeg.KwArgs{
-			"y":        fmt.Sprintf("main_h/2-max_glyph_a/2"),
+			"y":        "main_h/2-max_glyph_a/2",
 			"fontsize": config.FontSize,
 		}).
 		Drawtext(config.AwayTeam, 0, 0, false, ffmpeg.KwArgs{
 			"x":        fmt.Sprintf("main_w-%d-text_w", config.BarWidth+config.Margin),
-			"y":        fmt.Sprintf("main_h/2-max_glyph_a/2"),
+			"y":        "main_h/2-max_glyph_a/2",
 			"fontsize": config.FontSize,
-		}).
+		})
+}
+
+func RenderBoard(config *Config, outFileName *string) {
+
+	//homeScore, awayScore := generateScores(config)
+
+	back := generateBackground(config)
+	homeGoals := ProcessGoals(config, true, back)
+	awayGoals := ProcessGoals(config, false, homeGoals)
+	err := awayGoals.
 		Output(*outFileName, ffmpeg.KwArgs{"frames": config.Duration}).
 		GlobalArgs("-report").
 		OverWriteOutput().

@@ -1,14 +1,14 @@
 {
     "background": "0xdFdFdF",
-    "homeTeam": " Knights",
+    "homeTeam": " Team A",
     "homeColour": "0xff0000",
-    "awayTeam": " Rooks",
+    "awayTeam": " Team B",
     "awayColour": "0x0000ff",
     "barWidth": 10,
-    "framerate": 50,
-    "width": 550,
+    "framerate": 25,
+    "width": 400,
     "height": 50,
-    "duration": 150,
+    "duration": 300,
     "margin":5,
     "fontSize":30,
     "goals": [
@@ -21,7 +21,7 @@
             "frame": 50
         },
         {
-            "homeTeam": true,
+            "homeTeam": false,
             "frame": 75
         },
         {
@@ -29,7 +29,7 @@
             "frame": 100
         },
         {
-            "homeTeam": true,
+            "homeTeam": false,
             "frame": 125
         },
         {
@@ -37,7 +37,7 @@
             "frame": 150
         },
         {
-            "homeTeam": true,
+            "homeTeam": false,
             "frame": 175
         },
         {
