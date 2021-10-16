@@ -138,16 +138,15 @@ func generateBackground(config *Config) *ffmpeg.Stream {
 
 func RenderBoard(config *Config, outFileName *string) {
 
-	//homeScore, awayScore := generateScores(config)
-
 	back := generateBackground(config)
 	homeGoals := ProcessGoals(config, true, back)
 	awayGoals := ProcessGoals(config, false, homeGoals)
-	err := awayGoals.
+	stream := awayGoals.
 		Output(*outFileName, ffmpeg.KwArgs{"frames": config.Duration}).
 		GlobalArgs("-report").
-		OverWriteOutput().
-		Run()
+		OverWriteOutput()
+
+	err := stream.Run()
 
 	if err != nil {
 		log.Printf("Failed to create file: %v\n", err)
