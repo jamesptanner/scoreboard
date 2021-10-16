@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	ffmpeg "github.com/u2takey/ffmpeg-go"
-	"github.com/wargarblgarbl/libgosubs/srt"
 )
 
 func ProcessGoals(config *Config, hometeam bool) {
@@ -33,6 +32,14 @@ func ProcessGoals(config *Config, hometeam bool) {
 		return d
 	}
 
+	toTimestamp := func(frame *int, rate int) string {
+		ms := (((*frame) % rate) * 1000) / rate
+		s := *frame / rate
+		m, s := s/60, s%60
+		h, m := m/60, m%60
+		return fmt.Sprintf("%02d:%02d:%02d,%03d", h, m, s, ms)
+	}
+
 	for _, v := range config.Goals {
 		if v.HomeGoal == hometeam {
 			if v.Frame == nil {
@@ -54,6 +61,9 @@ func ProcessGoals(config *Config, hometeam bool) {
 				v.Frame = new(int)
 				*(v.Frame) = (totalSeconds * config.Framerate) + (int)((ms*config.Framerate)/1000)
 
+			} else if v.TimeStamp == nil {
+				v.TimeStamp = new(string)
+				*v.TimeStamp = toTimestamp(v.Frame, config.Framerate)
 			}
 			goals = append(goals, v)
 
@@ -64,35 +74,6 @@ func ProcessGoals(config *Config, hometeam bool) {
 		return *(goals[i].Frame) < *(goals[j].Frame)
 	})
 
-	toTimestamp := func(frame *int, rate int) string {
-		ms := (((*frame) % rate) * 1000) / rate
-		s := *frame / rate
-		m, s := s/60, s%60
-		h, m := m/60, m%60
-		return fmt.Sprintf("%02d:%02d:%02d,%03d", h, m, s, ms)
-	}
-
-	subs := srt.SubRip{}
-	last := "00:00:00,000"
-	for i := 0; i < len(goals); i++ {
-		next := toTimestamp(goals[i].Frame, config.Framerate)
-		sub := srt.CreateSubtitle(i+1, last, next, []string{fmt.Sprintf("%d", i)})
-		subs.Subtitle.Content = append(subs.Subtitle.Content, *sub)
-		last = next
-		log.Println("home:", hometeam, last)
-	}
-	sub := srt.CreateSubtitle(len(goals), last, toTimestamp(&config.Duration, config.Framerate), []string{fmt.Sprintf("%d", len(goals))})
-	subs.Subtitle.Content = append(subs.Subtitle.Content, *sub)
-
-	filename := "home.srt"
-	if !hometeam {
-		filename = "away.srt"
-	}
-
-	err := srt.WriteSrt(&subs, filename)
-	if err != nil {
-		log.Printf("Failed to write subtitles to %s: %v\n", filename, err)
-	}
 }
 
 func RenderBoard(config *Config, outFileName *string) {
